@@ -9,25 +9,39 @@ import time
 
 from multiprocessing import Process, Manager
 
+import requests
 
 def make_request(monitoring_items):
+    """
+    Make requets in really really simple ways.
+
+    Should be deligated to separate workers.
+    """
     while True:
-        time.sleep(0.5)
+        time.sleep(0.1)
 
         if len(monitoring_items) <= 0:
             continue
 
         urls = []
 
+        # Get list of jobs to be triggered
         for token, value in monitoring_items.items():
             if value[1] < datetime.now():
                 urls.append((token, value[0]))
 
+        # Remove jobs which will be triggered
         for token, _ in urls:
             del monitoring_items[token]
 
-        if len(urls) > 0:
-            print urls
+        # make requests
+        for token, url in urls:
+
+            try:
+                r = requests.get(url)
+                print (token, r.url, r.status_code)
+            except Exception as e:
+                print e
 
 # Name your API
 api = API("detect_disconnect")
